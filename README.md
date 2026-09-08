@@ -1,111 +1,78 @@
-# Edge-AI-for-Post-Harvest-Loss-Reduction
 # 🍎 Edge AI for Fruit Quality Classification
 
-> Transfer learning with MobileNetV2 to detect fruit quality (fresh vs. rotten) for post-harvest loss reduction in agriculture.
+A lightweight computer-vision project using **MobileNetV2 transfer learning** to classify fruit images as fresh or rotten, with the goal of supporting faster post-harvest quality inspection.
 
----
+## Problem
 
-## 📌 Problem Statement
+Manual fruit-quality inspection can be slow and inconsistent. This project explores a compact deep-learning model suitable for resource-constrained deployment scenarios such as farm or warehouse inspection.
 
-Post-harvest food losses cost billions annually in developing economies. Manual quality inspection is slow, inconsistent, and unscalable. This project builds a lightweight Edge AI model capable of running on low-resource devices (Raspberry Pi, mobile) to classify fruit quality in real time — enabling faster, automated quality control at the farm or warehouse level.
+## Model
 
----
-
-## 🧠 Model Architecture
-
-| Component | Detail |
+| Component | Configuration |
 |---|---|
-| Base Model | MobileNetV2 (pretrained on ImageNet) |
-| Custom Head | GlobalAveragePooling2D → Dense (Softmax) |
-| Input Size | 224 × 224 × 3 |
+| Backbone | MobileNetV2 pretrained on ImageNet |
+| Input | 224 × 224 × 3 |
+| Head | GlobalAveragePooling2D → Dense/Softmax |
 | Optimizer | Adam |
 | Loss | Categorical Crossentropy |
 | Epochs | 10 |
-| Batch Size | 32 |
+| Batch size | 32 |
 
-**Why MobileNetV2?** It is specifically designed for edge deployment — low latency, small footprint, and high accuracy on vision tasks, making it ideal for Raspberry Pi or similar constrained hardware.
+MobileNetV2 was selected because its lightweight architecture makes it a practical candidate for edge-oriented computer-vision applications.
 
----
+## Results
 
-## 📊 Results
+| Metric | Result |
+|---|---:|
+| Validation accuracy | ~94% |
 
-| Metric | Value |
-|---|---|
-| Validation Accuracy | ~94% |
-| Framework | TensorFlow / Keras |
-| Model Format | `.keras` |
+The reported result is from this project's validation setup and should not be treated as a guarantee of real-world performance.
 
-*Training/validation accuracy and loss curves generated during training (see Outputs section).*
+## Dataset
 
----
+Fruit Quality Classification dataset from Kaggle: https://www.kaggle.com/datasets/ryandpark/fruit-quality-classification
 
-## 🗂️ Dataset
+The project uses an 80/20 train-validation split with image augmentation.
 
-- **Source:** [Fruit Quality Classification – Kaggle](https://www.kaggle.com/datasets/ryandpark/fruit-quality-classification)
-- Multi-class image dataset of fresh and rotten fruits
-- 80/20 train-validation split with augmentation
+## Features
 
----
+- Transfer learning with MobileNetV2
+- Image augmentation
+- Single-image inference with confidence score
+- Confusion matrix and classification report
+- Training/validation curves
+- Saved Keras model for reuse
 
-## ⚙️ Tech Stack
+## Project structure
 
-`Python` `TensorFlow` `Keras` `MobileNetV2` `NumPy` `Matplotlib` `Seaborn` `Scikit-learn` `Google Colab`
-
----
-
-## 🚀 How to Run
-
-### 1. Clone the repo
-```bash
-git clone https://github.com/YOUR_USERNAME/edge-ai-fruit-quality.git
-cd edge-ai-fruit-quality
-```
-
-### 2. Install dependencies
-```bash
-pip install -r requirements.txt
-```
-
-### 3. Download dataset
-Set up your Kaggle API key (`kaggle.json`) and run:
-```bash
-kaggle datasets download ryandpark/fruit-quality-classification -p ./data
-```
-
-### 4. Run training
-```bash
-python aicte.py
-```
-
-### 5. Predict on a new image
-The script prompts you to upload an image and outputs the predicted class with confidence score.
-
----
-
-## 📁 Project Structure
-
-```
-edge-ai-fruit-quality/
-├── aicte.py               # Full training + evaluation + inference pipeline
-├── requirements.txt       # Python dependencies
+```text
+Edge-AI-for-Post-Harvest-Loss-Reduction/
+├── aicte.py
+├── requirements.txt
 └── README.md
 ```
 
----
+## Run locally
 
-## 🔍 Key Features
+```bash
+git clone https://github.com/pallavi12-code/Edge-AI-for-Post-Harvest-Loss-Reduction.git
+cd Edge-AI-for-Post-Harvest-Loss-Reduction
+pip install -r requirements.txt
+python aicte.py
+```
 
-- ✅ Transfer learning with frozen MobileNetV2 backbone
-- ✅ Real-time single-image inference with confidence score
-- ✅ Confusion matrix + classification report for evaluation
-- ✅ Accuracy and loss curves plotted over epochs
-- ✅ Model saved in `.keras` format for reuse/deployment
-- ✅ Lightweight architecture suitable for edge hardware (Raspberry Pi)
+## Tech stack
 
----
+**Python · TensorFlow · Keras · MobileNetV2 · NumPy · Pandas · Scikit-learn · Matplotlib · Seaborn**
 
-## 👩‍💻 Author
+## Future improvements
 
-** (Marikanti Pallavi Reddy)**  
-B.E. AI & ML — Chaitanya Bharathi Institute of Technology, Hyderabad  
-[LinkedIn](www.linkedin.com/in/pallavi-reddy-4865703a9) · [GitHub](https://github.com/pallavi12-code)
+- Benchmark inference latency and model size on real edge hardware
+- Add a held-out test set and cross-dataset evaluation
+- Quantize the model for constrained devices
+- Add a lightweight web/mobile inference interface
+
+## Author
+
+**Pallavi Reddy**  
+B.E. Artificial Intelligence & Machine Learning, CBIT Hyderabad
