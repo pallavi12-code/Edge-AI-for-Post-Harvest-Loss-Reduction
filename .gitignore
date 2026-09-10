@@ -1,9 +1,14 @@
 .venv/
 venv/
 __pycache__/
+.pytest_cache/
 *.py[cod]
 .ipynb_checkpoints/
 .env
 .env.*
 .DS_Store
 *.log
+artifacts/
+data/
+*.keras
+*.h5
