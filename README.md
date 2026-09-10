@@ -1,78 +1,98 @@
-# 🍎 Edge AI for Fruit Quality Classification
+# Edge AI for Fruit Quality Classification
 
-A lightweight computer-vision project using **MobileNetV2 transfer learning** to classify fruit images as fresh or rotten, with the goal of supporting faster post-harvest quality inspection.
+This project trains a MobileNetV2 transfer-learning classifier for fruit-quality images. It is an edge-oriented research/portfolio project: the model architecture is compact, but no Raspberry Pi, mobile, or other device deployment is included.
 
-## Problem
+## Architecture
 
-Manual fruit-quality inspection can be slow and inconsistent. This project explores a compact deep-learning model suitable for resource-constrained deployment scenarios such as farm or warehouse inspection.
+```text
+image (224x224x3)
+  -> training-only augmentation (rotation, horizontal flip, zoom)
+  -> MobileNetV2 ImageNet backbone (frozen)
+  -> global average pooling
+  -> dropout
+  -> softmax class head
+```
 
-## Model
+The model contains the input rescaling layer, so the same saved `.keras` model is used for evaluation and prediction. Training uses an Adam optimizer, categorical cross-entropy, early stopping, learning-rate reduction, and best-checkpoint saving.
 
-| Component | Configuration |
-|---|---|
-| Backbone | MobileNetV2 pretrained on ImageNet |
-| Input | 224 × 224 × 3 |
-| Head | GlobalAveragePooling2D → Dense/Softmax |
-| Optimizer | Adam |
-| Loss | Categorical Crossentropy |
-| Epochs | 10 |
-| Batch size | 32 |
+## Dataset structure
 
-MobileNetV2 was selected because its lightweight architecture makes it a practical candidate for edge-oriented computer-vision applications.
+Provide a directory with one subdirectory per class. The training code only reads image files; it never downloads, extracts, deletes, renames, or otherwise modifies the dataset.
 
-## Results
+```text
+data/
+├── fresh/
+│   ├── image-001.jpg
+│   └── image-002.jpg
+└── rotten/
+    ├── image-003.jpg
+    └── image-004.jpg
+```
 
-| Metric | Result |
-|---|---:|
-| Validation accuracy | ~94% |
+The [Fruit Quality Classification dataset](https://www.kaggle.com/datasets/ryandpark/fruit-quality-classification) is one compatible source. Download it separately and pass its extracted class-directory root to the scripts.
 
-The reported result is from this project's validation setup and should not be treated as a guarantee of real-world performance.
+## Setup
 
-## Dataset
+```bash
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
+```
 
-Fruit Quality Classification dataset from Kaggle: https://www.kaggle.com/datasets/ryandpark/fruit-quality-classification
+## Training
 
-The project uses an 80/20 train-validation split with image augmentation.
+```bash
+python train.py \
+  --data-dir /path/to/data \
+  --output-dir artifacts/fruit-quality \
+  --epochs 10 \
+  --batch-size 32 \
+  --validation-split 0.2 \
+  --seed 42
+```
 
-## Features
+The output directory contains `best_model.keras`, `final_model.keras`, `class_names.json`, and `training_summary.json`. The dataset path is intentionally external to the repository and is ignored by Git.
 
-- Transfer learning with MobileNetV2
-- Image augmentation
-- Single-image inference with confidence score
-- Confusion matrix and classification report
-- Training/validation curves
-- Saved Keras model for reuse
+## Evaluation and prediction
+
+Evaluation recreates the same deterministic validation split:
+
+```bash
+python evaluate.py \
+  --model artifacts/fruit-quality/best_model.keras \
+  --data-dir /path/to/data \
+  --output artifacts/fruit-quality/evaluation.json
+```
+
+Predict one image using the saved class ordering:
+
+```bash
+python predict.py \
+  --model artifacts/fruit-quality/best_model.keras \
+  --class-names artifacts/fruit-quality/class_names.json \
+  --image /path/to/image.jpg
+```
+
+Both commands print JSON. This repository does not publish accuracy, latency, or model-size claims because those depend on the dataset, trained checkpoint, and hardware used.
 
 ## Project structure
 
 ```text
-Edge-AI-for-Post-Harvest-Loss-Reduction/
-├── aicte.py
+├── train.py                 # reproducible training entry point
+├── evaluate.py              # validation evaluation entry point
+├── predict.py               # single-image inference entry point
+├── fruit_quality_utils.py   # dataset and argument validation
+├── tests/test_utils.py      # dataset-independent tests
 ├── requirements.txt
-└── README.md
+└── .github/workflows/ci.yml
 ```
 
-## Run locally
+## Reproducibility and CI
 
-```bash
-git clone https://github.com/pallavi12-code/Edge-AI-for-Post-Harvest-Loss-Reduction.git
-cd Edge-AI-for-Post-Harvest-Loss-Reduction
-pip install -r requirements.txt
-python aicte.py
-```
+Training accepts explicit dataset, output, epoch, batch-size, validation-split, and seed arguments. Python, NumPy, and TensorFlow seeds are set, and TensorFlow deterministic operations are enabled where supported. Results are still dependent on TensorFlow version, hardware, and pretrained-weight availability.
 
-## Tech stack
+GitHub Actions installs `requirements.txt` on Python 3.11 and runs the non-GPU, non-dataset-dependent test suite on every pull request and push to `main`.
 
-**Python · TensorFlow · Keras · MobileNetV2 · NumPy · Pandas · Scikit-learn · Matplotlib · Seaborn**
+## Edge deployment roadmap
 
-## Future improvements
-
-- Benchmark inference latency and model size on real edge hardware
-- Add a held-out test set and cross-dataset evaluation
-- Quantize the model for constrained devices
-- Add a lightweight web/mobile inference interface
-
-## Author
-
-**Pallavi Reddy**  
-B.E. Artificial Intelligence & Machine Learning, CBIT Hyderabad
+The saved Keras model is a portable artifact for future conversion and benchmarking. Actual TensorFlow Lite conversion, quantization, device packaging, latency measurement, and memory profiling are not implemented here and should be added only with measurements from the target hardware.

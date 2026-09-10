@@ -1,7 +1,4 @@
-tensorflow>=2.12.0
-numpy>=1.23.0
-matplotlib>=3.6.0
-seaborn>=0.12.0
-scikit-learn>=1.2.0
-kaggle>=1.5.0
-Pillow>=9.0.0
+numpy>=1.23,<3
+Pillow>=9
+tensorflow>=2.12,<3
+pytest>=7
